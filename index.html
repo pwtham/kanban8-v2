@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-kI9hK1EUA4mmRtrifeHp8xxxk+ka0re+8PHHPwrnAoA='; style-src 'sha256-YL+E3SskcR29PfriqEA7Ct19TYL7T0bD7RCrRCvyM/Q='; connect-src https://formsubmit.co; form-action 'none'; base-uri 'none'; object-src 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-d1Q+n9PDF2/h6bi+rfCN+fwo5FrMk/tTWYU90WyHvFw='; style-src 'sha256-6tqKhsK/Fro3akoRT0i//vQjPFfVhx9yuwG+x/Q4I/A='; connect-src https://formsubmit.co; form-action 'none'; base-uri 'none'; object-src 'none'">
 <meta name="referrer" content="no-referrer">
 <title>IT PMO Board</title>
 <style>
@@ -310,7 +310,7 @@ form label { display: block; font-weight: 600; margin-bottom: var(--sp-1); font-
 .sec-foot { margin: var(--sp-4) 0 0; font-size: 12px; color: var(--ink-soft); }
 
 /* ===== Toasts ===== */
-.toasts { position: fixed; right: var(--sp-4); bottom: var(--sp-4); display: flex; flex-direction: column; gap: var(--sp-2); z-index: 50; max-width: min(360px, 92vw); }
+.toasts { position: fixed; right: var(--sp-4); bottom: 112px; display: flex; flex-direction: column; gap: var(--sp-2); z-index: 50; max-width: min(360px, 92vw); }
 .toast { padding: var(--sp-3) var(--sp-4); border-radius: var(--radius); color: #fff; background: var(--green); font-weight: 600; border: 1px solid rgba(0,0,0,0.15); }
 :root[data-theme="dark"] .toast { color: #0f2419; }
 .toast.warn { background: #8a5a00; color: #fff; }
@@ -324,6 +324,59 @@ form label { display: block; font-weight: 600; margin-bottom: var(--sp-1); font-
 .meeting-facts dt { color: var(--ink-soft); font-weight: 600; }
 .meeting-facts dd { margin: 0; font-weight: 600; }
 .meeting-actions { display: flex; justify-content: flex-end; }
+
+/* ===== Gennie: floating IT support assistant ===== */
+.gennie { position: fixed; right: var(--sp-5); bottom: var(--sp-5); z-index: 40; display: flex; flex-direction: column; align-items: flex-end; gap: var(--sp-3); }
+.gennie-fab {
+  position: relative; width: 64px; height: 64px; padding: 0; border: 3px solid var(--surface);
+  border-radius: 50%; background: var(--accent); cursor: pointer;
+  display: grid; place-items: center;
+  animation: gennie-bob 3.2s var(--ease) infinite;
+  transition: transform 160ms var(--ease);
+}
+.gennie-fab:hover { transform: scale(1.08); }
+.gennie-fab:active { transform: scale(0.95); }
+.gennie-fab::after {
+  content: ""; position: absolute; inset: -6px; border-radius: 50%;
+  border: 2px solid var(--accent); opacity: 0;
+  animation: gennie-ring 2.6s var(--ease) 1.2s 3;
+}
+.gennie-face { position: relative; width: 40px; height: 30px; border-radius: 14px; background: var(--on-accent); display: block; }
+.g-antenna { position: absolute; left: 50%; top: -11px; width: 2px; height: 9px; margin-left: -1px; background: var(--on-accent); }
+.g-antenna::before { content: ""; position: absolute; left: -3px; top: -5px; width: 8px; height: 8px; border-radius: 50%; background: #ff8fb1; }
+.g-eye { position: absolute; top: 8px; width: 6px; height: 8px; border-radius: 50%; background: var(--accent); animation: gennie-blink 4.5s infinite; }
+.g-eye.l { left: 9px; }
+.g-eye.r { right: 9px; }
+.g-cheek { position: absolute; top: 15px; width: 6px; height: 4px; border-radius: 50%; background: #ff8fb1; opacity: 0.85; }
+.g-cheek.l { left: 3px; }
+.g-cheek.r { right: 3px; }
+.g-mouth { position: absolute; left: 50%; bottom: 5px; width: 12px; height: 6px; margin-left: -6px; border-bottom: 3px solid var(--accent); border-radius: 0 0 12px 12px; transform-origin: center top; }
+.gennie-fab.speaking .g-mouth { animation: gennie-talk 360ms var(--ease) infinite alternate; }
+.gennie-fab.speaking { animation: none; }
+
+.gennie-bubble {
+  position: relative; width: min(300px, calc(100vw - 2 * var(--sp-5)));
+  background: var(--surface); color: var(--ink); border: 1px solid var(--line);
+  border-radius: var(--radius-lg); padding: var(--sp-4);
+}
+.gennie-bubble[hidden] { display: none; }
+.gennie-name { margin: 0 0 var(--sp-1); font-size: 13px; font-weight: 700; color: var(--accent-strong); text-transform: uppercase; letter-spacing: 0.06em; }
+.gennie-text { margin: 0 var(--sp-5) var(--sp-3) 0; font-size: 15px; }
+.gennie-note { margin: 0 0 var(--sp-3); font-size: 13px; color: var(--ink-soft); }
+.gennie-note[hidden] { display: none; }
+.gennie-actions { display: flex; flex-wrap: wrap; gap: var(--sp-2); }
+.gennie-actions .btn { min-height: 44px; }
+.gennie-wa { display: inline-flex; align-items: center; justify-content: center; text-decoration: none; }
+.gennie-close {
+  position: absolute; top: var(--sp-2); right: var(--sp-2); width: 44px; height: 44px;
+  border: 0; border-radius: 8px; background: transparent; color: var(--ink-soft); font-size: 22px; line-height: 1; cursor: pointer;
+}
+.gennie-close:hover { background: var(--accent-soft); color: var(--accent-strong); }
+
+@keyframes gennie-bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+@keyframes gennie-blink { 0%, 92%, 100% { transform: scaleY(1); } 95% { transform: scaleY(0.1); } }
+@keyframes gennie-talk { from { transform: scaleY(0.5); } to { transform: scaleY(1.5); } }
+@keyframes gennie-ring { 0% { transform: scale(0.9); opacity: 0.7; } 100% { transform: scale(1.35); opacity: 0; } }
 
 .framed-msg { padding: var(--sp-6); font-size: 16px; }
 
@@ -339,7 +392,8 @@ form label { display: block; font-weight: 600; margin-bottom: var(--sp-1); font-
 
 @media (prefers-reduced-motion: reduce) {
   .board.intro .column { animation: none; }
-  .btn, .card, .column, .del-btn { transition: none; }
+  .btn, .card, .column, .del-btn, .gennie-fab { transition: none; }
+  .gennie-fab, .gennie-fab::after, .g-eye, .gennie-fab.speaking .g-mouth { animation: none; }
 }
 
 /* ===== Responsive ===== */
@@ -349,6 +403,8 @@ form label { display: block; font-weight: 600; margin-bottom: var(--sp-1); font-
   .column { flex: 0 0 86vw; max-width: 86vw; }
   form { grid-template-columns: 1fr; }
   .filters .count { margin-left: 0; flex-basis: 100%; }
+  .gennie { right: var(--sp-4); bottom: var(--sp-4); }
+  .toasts { bottom: 100px; }
 }
 </style>
 </head>
@@ -469,6 +525,28 @@ form label { display: block; font-weight: 600; margin-bottom: var(--sp-1); font-
     <div class="meeting-actions"><button type="button" class="btn" id="okMeeting">Got it</button></div>
   </div>
 </dialog>
+
+<!-- ===== Gennie: floating IT support assistant (voice greeting + WhatsApp link) ===== -->
+<div class="gennie" id="gennie">
+  <div class="gennie-bubble" id="gennieBubble" role="region" aria-label="Gennie, IT support assistant" hidden>
+    <button type="button" class="gennie-close" id="gennieClose" aria-label="Close Gennie">&times;</button>
+    <p class="gennie-name">Gennie</p>
+    <p class="gennie-text" id="gennieText"></p>
+    <p class="gennie-note" id="gennieNote" role="status" hidden></p>
+    <div class="gennie-actions">
+      <a class="btn gennie-wa" id="gennieWa" href="https://wa.me/6512345678" target="_blank" rel="noopener noreferrer">Chat on WhatsApp</a>
+      <button type="button" class="btn btn-secondary" id="gennieReplay">Hear it again</button>
+    </div>
+  </div>
+  <button type="button" class="gennie-fab" id="gennieFab" aria-expanded="false" aria-controls="gennieBubble" aria-label="Ask Gennie, the IT support assistant">
+    <span class="gennie-face" aria-hidden="true">
+      <span class="g-antenna"></span>
+      <span class="g-eye l"></span><span class="g-eye r"></span>
+      <span class="g-cheek l"></span><span class="g-cheek r"></span>
+      <span class="g-mouth"></span>
+    </span>
+  </button>
+</div>
 
 <!-- ===== Toast region ===== -->
 <div class="toasts" id="toasts" aria-live="polite" role="status"></div>
@@ -1022,6 +1100,72 @@ function scheduleMeetingReminder() {
 }
 
 /* ===================================================================
+   Gennie: floating IT support assistant. Click = spoken greeting
+   (browser speech synthesis, no audio files) plus a WhatsApp link.
+   =================================================================== */
+const GENNIE_GREETING = "Hi, I am Gennie, your IT support assistant. How can I help you?";
+const GENNIE_VOICE_OK = "speechSynthesis" in window && "SpeechSynthesisUtterance" in window;
+
+function gennieVoice() {
+  const english = window.speechSynthesis.getVoices().filter(function (v) { return /^en/i.test(v.lang); });
+  const friendly = english.find(function (v) { return /zira|aria|jenny|samantha|susan|hazel|female/i.test(v.name); });
+  return friendly || english[0] || null;
+}
+
+function initGennie() {
+  const fab = document.getElementById("gennieFab");
+  const bubble = document.getElementById("gennieBubble");
+  const note = document.getElementById("gennieNote");
+  document.getElementById("gennieText").textContent = GENNIE_GREETING;
+  if (GENNIE_VOICE_OK) window.speechSynthesis.getVoices();   // warm up the voice list
+
+  function speak() {
+    if (!GENNIE_VOICE_OK) {
+      note.textContent = "Voice is not supported in this browser, so the greeting is shown as text.";
+      note.hidden = false;
+      return;
+    }
+    note.hidden = true;
+    window.speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(GENNIE_GREETING);
+    u.lang = "en-US";
+    u.rate = 1;
+    u.pitch = 1.15;
+    const v = gennieVoice();
+    if (v) { u.voice = v; u.lang = v.lang; }
+    u.onstart = function () { fab.classList.add("speaking"); };
+    u.onend = function () { fab.classList.remove("speaking"); };
+    u.onerror = function () {
+      fab.classList.remove("speaking");
+      note.textContent = "The voice could not play. The greeting is shown as text.";
+      note.hidden = false;
+    };
+    window.speechSynthesis.speak(u);
+  }
+
+  function openGennie() {
+    bubble.hidden = false;
+    fab.setAttribute("aria-expanded", "true");
+    logEvent("Support assistant opened");
+    speak();
+  }
+
+  function closeGennie() {
+    bubble.hidden = true;
+    fab.setAttribute("aria-expanded", "false");
+    fab.classList.remove("speaking");
+    if (GENNIE_VOICE_OK) window.speechSynthesis.cancel();
+  }
+
+  fab.addEventListener("click", function () { if (bubble.hidden) openGennie(); else closeGennie(); });
+  document.getElementById("gennieClose").addEventListener("click", function () { closeGennie(); fab.focus(); });
+  document.getElementById("gennieReplay").addEventListener("click", speak);
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Escape" && !bubble.hidden && !document.querySelector("dialog[open]")) { closeGennie(); fab.focus(); }
+  });
+}
+
+/* ===================================================================
    Init: populate selects, wire events, seed, first render
    =================================================================== */
 function init() {
@@ -1082,6 +1226,7 @@ function init() {
   logEvent("Board loaded with " + state.tasks.length + " demo tasks");
   setTimeout(function () { document.getElementById("board").classList.remove("intro"); }, 1200);
   scheduleMeetingReminder();
+  initGennie();
 }
 
 /* Clickjacking guard: do not run inside someone else's frame. */
