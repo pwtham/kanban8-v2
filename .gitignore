@@ -1,0 +1,11 @@
+.env
+.env.*
+*.pem
+*.key
+id_rsa*
+id_ed25519*
+node_modules/
+.claude/
+.mcp.json
+.DS_Store
+Thumbs.db
