@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-mWUZ9GP5ytd7HIQ15gnKx+/kDjd7dkkVKG0qwpYRSaw='; style-src 'sha256-IPmL69kT+4f6e6ueUaDBZ5cekB3TmANiXk8BZd//M9o='; connect-src https://formsubmit.co; form-action 'none'; base-uri 'none'; object-src 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-kI9hK1EUA4mmRtrifeHp8xxxk+ka0re+8PHHPwrnAoA='; style-src 'sha256-YL+E3SskcR29PfriqEA7Ct19TYL7T0bD7RCrRCvyM/Q='; connect-src https://formsubmit.co; form-action 'none'; base-uri 'none'; object-src 'none'">
 <meta name="referrer" content="no-referrer">
 <title>IT PMO Board</title>
 <style>
@@ -317,6 +317,14 @@ form label { display: block; font-weight: 600; margin-bottom: var(--sp-1); font-
 :root[data-theme="dark"] .toast.warn { background: var(--amber); color: #2a1a00; }
 .toast.info { background: var(--accent); color: var(--on-accent); }
 
+/* ===== Meeting reminder ===== */
+.meeting-body { padding: var(--sp-5) var(--sp-4) var(--sp-4); }
+.meeting-body h3 { margin: 0 0 var(--sp-3); font-size: 18px; font-weight: 600; }
+.meeting-facts { margin: 0 0 var(--sp-5); display: grid; grid-template-columns: auto 1fr; gap: var(--sp-2) var(--sp-4); }
+.meeting-facts dt { color: var(--ink-soft); font-weight: 600; }
+.meeting-facts dd { margin: 0; font-weight: 600; }
+.meeting-actions { display: flex; justify-content: flex-end; }
+
 .framed-msg { padding: var(--sp-6); font-size: 16px; }
 
 /* ===== Entrance: page-load stagger (first render only) ===== */
@@ -444,6 +452,22 @@ form label { display: block; font-weight: 600; margin-bottom: var(--sp-1); font-
     <button type="button" class="close" id="closeSec" aria-label="Close security panel">&times;</button>
   </div>
   <div class="sec-body" id="secContent"></div>
+</dialog>
+
+<!-- ===== Meeting reminder (shown after 10 seconds on the page) ===== -->
+<dialog id="meetingDialog" aria-labelledby="meetingTitle">
+  <div class="modal-head">
+    <h2 id="meetingTitle">Meeting reminder</h2>
+    <button type="button" class="close" id="closeMeeting" aria-label="Close meeting reminder">&times;</button>
+  </div>
+  <div class="meeting-body">
+    <h3>IT project management meeting</h3>
+    <dl class="meeting-facts">
+      <dt>When</dt><dd id="meetingWhen"></dd>
+      <dt>Where</dt><dd>Room 888</dd>
+    </dl>
+    <div class="meeting-actions"><button type="button" class="btn" id="okMeeting">Got it</button></div>
+  </div>
 </dialog>
 
 <!-- ===== Toast region ===== -->
@@ -961,6 +985,43 @@ function applyTheme(theme) {
 }
 
 /* ===================================================================
+   Meeting reminder: pops up once, after 10 seconds on the page
+   =================================================================== */
+const REMINDER_DELAY_MS = 10000;
+
+/* Next Wednesday 10:00 am. If today is Wednesday, that means a week from today. */
+function nextWednesday() {
+  const d = new Date();
+  const ahead = (3 - d.getDay() + 7) % 7 || 7;
+  d.setDate(d.getDate() + ahead);
+  return d;
+}
+
+function showMeetingReminder() {
+  // Never stack on top of a dialog the person is already using; try again shortly.
+  if (document.querySelector("dialog[open]")) { setTimeout(showMeetingReminder, 2000); return; }
+  const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+  const d = nextWednesday();
+  document.getElementById("meetingWhen").textContent =
+    days[d.getDay()] + ", " + formatDate(isoDate(d)) + " at 10:00 am";
+  document.getElementById("meetingDialog").showModal();
+  document.getElementById("okMeeting").focus();
+  logEvent("Meeting reminder shown");
+}
+
+function scheduleMeetingReminder() {
+  setTimeout(function () {
+    if (!document.hidden) { showMeetingReminder(); return; }
+    // Tab was in the background: count the time once the person is back.
+    document.addEventListener("visibilitychange", function onVisible() {
+      if (document.hidden) return;
+      document.removeEventListener("visibilitychange", onVisible);
+      showMeetingReminder();
+    });
+  }, REMINDER_DELAY_MS);
+}
+
+/* ===================================================================
    Init: populate selects, wire events, seed, first render
    =================================================================== */
 function init() {
@@ -994,6 +1055,11 @@ function init() {
   });
   document.getElementById("closeSec").addEventListener("click", function () { secDialog.close(); });
 
+  const meetingDialog = document.getElementById("meetingDialog");
+  function closeMeeting() { meetingDialog.close(); }
+  document.getElementById("closeMeeting").addEventListener("click", closeMeeting);
+  document.getElementById("okMeeting").addEventListener("click", closeMeeting);
+
   function onFilter() {
     state.filters.project = document.getElementById("fProject").value;
     state.filters.priority = document.getElementById("fPriority").value;
@@ -1015,6 +1081,7 @@ function init() {
   renderBoard();
   logEvent("Board loaded with " + state.tasks.length + " demo tasks");
   setTimeout(function () { document.getElementById("board").classList.remove("intro"); }, 1200);
+  scheduleMeetingReminder();
 }
 
 /* Clickjacking guard: do not run inside someone else's frame. */
